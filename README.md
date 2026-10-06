@@ -2,6 +2,8 @@ English | [Japanese](./README.ja.md) | [Chinese (Simplified)](./README.sc.md)
 
 # CrystalDiskInfo
 
+This fork provides a portable x64 Windows ZIP build. See [PORTABLE.md](./PORTABLE.md) for building and running it without an installer.
+
 ## Overview
 CrystalDiskInfo is a disk information tool.
 

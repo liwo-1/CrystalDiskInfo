@@ -1,0 +1,59 @@
+name: Portable Windows build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [portable-build]
+    paths:
+      - '**.cpp'
+      - '**.h'
+      - '**.rc'
+      - '**.vcxproj'
+      - 'Language/**'
+      - 'scripts/**'
+      - '.github/workflows/portable.yml'
+  pull_request:
+    paths:
+      - '**.cpp'
+      - '**.h'
+      - '**.rc'
+      - '**.vcxproj'
+      - 'Language/**'
+      - 'scripts/**'
+      - '.github/workflows/portable.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  portable:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download verified runtime resources
+        shell: pwsh
+        run: ./scripts/get-portable-resources.ps1
+      - name: Build and package x64 Release
+        shell: pwsh
+        run: ./scripts/build-portable.ps1 -ResourcePath ./artifacts/resources
+      - name: Test extracted portable package
+        shell: pwsh
+        run: |
+          $archive = Get-ChildItem ./artifacts/portable/*.zip | Select-Object -First 1
+          ./scripts/test-portable.ps1 -ArchivePath $archive.FullName
+      - name: Upload portable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrystalDiskInfo-portable-x64
+          path: |
+            artifacts/portable/*.zip
+            artifacts/portable/*.sha256
+          if-no-files-found: error
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-build-logs
+          path: artifacts/**/*.log
+          if-no-files-found: ignore
